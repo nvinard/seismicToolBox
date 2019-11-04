@@ -38,7 +38,7 @@ import copy
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button
 import sys
-
+from typing import Tuple
 from tqdm import tnrange
 
 ##################################################
@@ -102,7 +102,7 @@ def sortdata(
     H_SHT: np.ndarray,
     sortkey1: int,
     sortkey2 = None
-    )-> Tuple([np.ndarray, np.ndarry]):
+    )->tuple([np.ndarray, np.ndarray]):
 
     """
     sorted_data, sorted_header = sortdata(data, H_SHT, sortkey1, sortkey2 = None):
@@ -168,7 +168,7 @@ def selectCMP(
     CMPsorted: np.ndarray,
     H_CMP: np.ndarray,
     midpnt: float
-    ) -> Tuple([np.ndarray, np.ndarray]):
+    )->tuple([np.ndarray, np.ndarray]):
 
     """
 
@@ -229,8 +229,8 @@ def selectCMP(
 ########## HEADER AND DATA VISUALIZATION #########
 ##################################################
 
-def analysefold(H_SHT: np.ndarrat, sortkey: int
-    )->Tuple([np.ndarray, np.ndarray]):
+def analysefold(H_SHT: np.ndarray, sortkey: int
+    )->tuple([np.ndarray, np.ndarray]):
 
     """
     positions, folds = analysefold(H_SHT, sortkey)
@@ -566,7 +566,7 @@ def semblanceWiggle(
     H,
     vmin:float,
     vmax:float,
-    vstep:float)->Tuple([np.ndarray, np.ndarray]):
+    vstep:float)->tuple([np.ndarray, np.ndarray]):
 
     """
     v_picks, t_picks = semblanceWiggle(CMPgather,TrcH,H,vmin,vmax,vstep):
@@ -1841,7 +1841,7 @@ def kirk_mig(
     vModel,
     t,
     x
-    )->Tuple([np.ndarray, np.ndarray, np.ndarray]):
+    )->tuple([np.ndarray, np.ndarray, np.ndarray]):
 
     """
     dataMig, tmig, xmig = kirk_mig(dataIn, vModel, t, x)
