@@ -20,10 +20,9 @@ kirk_mig                : Kirkhoff migration
 time2depth_trace        : time-to-depth conversion for a single trace in time domain
 time2depth_section      : time-to-depth conversion for a seismic section in time domain
 
-(C) Nicolas Vinard and Musab al Hasani, 2019, v0.3
+(C) Nicolas Vinard and Musab al Hasani, 2019, v.0.0.6
 
-Update SeismicToolBox v0.5:
-
+- 16.01.2020 Added clipping in wiggle function
 - Fixed semblanceWiggle sorting error
 
 """
@@ -473,9 +472,8 @@ def wiggle(
 
     dx = x[1]-x[0]
 
-    maxval = -1
     Dmax = np.nanmax(Data)
-    maxval = -1*maxval*Dmax
+    maxval = np.abs(Dmax)
 
     for i in range(0, ntraces, skipt):
 
@@ -485,6 +483,7 @@ def wiggle(
         trace[0] = 0
         trace[-1] = 0
         traceplt = x[i] + gain * skipt * dx * trace / maxval
+        traceplt = np.clip(traceplt, a_min=x[i]-dx, a_max=(dx+x[i]))
 
         ax.plot(traceplt, t, color=color, linewidth=lwidth)
 
@@ -495,15 +494,13 @@ def wiggle(
                 if (trace[a] < 0):
                     trace[a] = 0
             ax.fill_betweenx(t, offset, traceplt, where=(traceplt>offset), interpolate='True', linewidth=0, color=color)
-            ax.grid(True)
+            ax.grid(False)
 
         ax.set_xlim([x[0]-1, x[-1]+1])
 
     ax.invert_yaxis()
     ax.set_ylim([np.max(t), np.min(t)])
     ax.set_ylabel(yl)
-
-    return ax
 
 def plothdr(Header: np.ndarray, trmin=None, trmax=None):
 
@@ -566,7 +563,8 @@ def semblanceWiggle(
     H,
     vmin:float,
     vmax:float,
-    vstep:float)->tuple([np.ndarray, np.ndarray]):
+    vstep:float
+    )->tuple([np.ndarray, np.ndarray]):
 
     """
     v_picks, t_picks = semblanceWiggle(CMPgather,TrcH,H,vmin,vmax,vstep):
@@ -604,8 +602,8 @@ def semblanceWiggle(
 
     # Create vectors
     x = H_CMPgather[4,:]
-    t = np.arange(0,H['ns']*H['dt']/1000000, H['dt']/1000000)
-    t2 = np.arange(0,H['ns']*H['dt']/1000000, H['dt']/1000000)
+    t = np.arange(0,H['ns']*H['dt']*1e-6, H['dt']*1e-6)
+    t2 = np.arange(0,H['ns']*H['dt']*1e-6, H['dt']*1e-6)
     v = np.arange(vmin,vmax+vstep,vstep)
 
     # Compute the squares
@@ -732,7 +730,8 @@ def apply_nmo(
     H,
     t: np.ndarray,
     v: np.ndarray,
-    smute=0):
+    smute=0
+    )->np.ndarray:
 
     """
     NMOedCMP = apply_nmo(CMPgather, H_CMPgather, H, t, v, smute=0)
@@ -772,7 +771,7 @@ def apply_nmo(
     """
     # Convert time to ms
     t = 1000*t
-    dt = H['dt']/1000000
+    dt = H['dt']*1e-3 # Convert H['dt'] to ms
     nt = H['ns'] # Number of time samples
 
     # append zero to first time vector if not already 0
@@ -790,7 +789,7 @@ def apply_nmo(
     v2 = np.interp(t_plot, t, v)
 
     c = v2
-    #dt = dt/1000
+    dt = dt/1000
 
     nx = np.min(CMPgather.shape)
 
@@ -853,7 +852,8 @@ def nmo_v(
     H_CMPgather: np.ndarray,
     H,
     c: float,
-    smute=0):
+    smute=0
+    )->np.ndarray:
 
     """
 
@@ -951,7 +951,8 @@ def nmo_vlog(
     H: dict,
     t: np.ndarray,
     v: np.ndarray,
-    smute=0):
+    smute=0
+    )->tuple([np.ndarray, np.ndarray]):
 
     """
     NMOedCMP = nmo_vlog(CMPgather, H_CMPgather, H, t, v, smute=0)
@@ -990,7 +991,7 @@ def nmo_vlog(
     """
     # Convert time to ms
     t = 1000*t
-    dt = H['dt']/1000000
+    dt = H['dt']*1e-3
     nt = H['ns'] # Number of time samples
 
     # append zero to first time vector if not already 0
@@ -1011,11 +1012,12 @@ def nmo_vlog(
     ax.plot(v2, t_plot)
     ax.scatter(v,t, color='red')
     ax.invert_yaxis()
-    ax.set_ylabel('two-way traveltime [ms')
-    ax.set_xlabel('velocity [m/s')
+    ax.set_ylabel('two-way traveltime [ms]')
+    ax.set_xlabel('velocity [m/s]')
     fig.tight_layout()
 
     c = v2
+    dt = dt*1e-03 # Now time is needed in s
     nx = np.min(CMPgather.shape)
 
     NMOedCMP = np.zeros((nt, nx))
@@ -1549,7 +1551,7 @@ def tvLogs(
     """
 
     cmppicks=np.array(cmppicks)
-    time = np.arange(0, H['ns'])*H['dt']/1000000
+    time = np.arange(0, H['ns'])*H['dt']*1e-06
     tvLog = np.zeros((cmppicks.shape[0], time.shape[0], 2))
     tvLog[:,:,0] = time
 
