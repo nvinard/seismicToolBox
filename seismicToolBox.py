@@ -25,10 +25,11 @@ time2depth_section      : time-to-depth conversion for a seismic section in time
 - 16.01.2020 Added clipping in wiggle function
 - Fixed semblanceWiggle sorting error
 
-"""
 
-from __future__ import division
-from __future__ import print_function
+Mention crewes
+This code is based on xxx.m found in the CREWES Matlab library at www.crewes.org
+
+"""
 
 import struct, sys
 import numpy as np
@@ -340,7 +341,9 @@ def imageseis(Data: np.ndarray, x=None, t=None, gain=1):
     -------
     Seismic image
 
-    Translated to Python from Matlab by Musab al Hasani and Nicolas Vinard, 2019
+    Adapted from segypy (Thomas Mejer Hansen, https://github.com/cultpenguin/segypy/blob/master/segypy/segypy.py)
+
+    Musab and Nicolas added interactive gain and clip, 2019
 
     """
 
@@ -438,7 +441,8 @@ def wiggle(
     -------
     Seismic wiggle plot
 
-    Translated to Python from Matlab by Nicolas Vinard and Musab al Hasani, 2019
+    Adapted from segypy (Thomas Mejer Hansen, https://github.com/cultpenguin/segypy/blob/master/segypy/segypy.py)
+
 
     """
     # Make a copy of the original, so that it won't change the original one ouside the scope of the function
