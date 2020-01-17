@@ -2239,3 +2239,14 @@ def time2depth_section(tsection, vrmsmodel, tt):
     print('Done!')
 
     return zsection, zz
+
+
+def agc():
+    """
+    
+    agc: Automatic gain control.
+
+
+    """
+
+    return trace
