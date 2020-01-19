@@ -2241,12 +2241,91 @@ def time2depth_section(tsection, vrmsmodel, tt):
     return zsection, zz
 
 
-def agc():
-    """
+def agc(data, time, agc_type = 'rms',  time_gate = 10e-3):
+        
+        num_traces = data.shape[1]
+        gain_data  = np.zeros(data.shape)
+        
+        if agc_type == 'rms':
+            for itrc in range(num_traces):
+                gain_data[:, itrc] = rms_agc(data[:, itrc], time)
+                
+        elif agc_type =='inst':
+            for itrc in range(num_traces):
+                gain_data[:, itrc] = inst_agc(data[:, itrc], time)
+                
+        else:
+            print('Wrong agc type!')
+                
+        return gain_data
+
+
+
+
+def rms_agc(trace, time,  time_gate=10e-3):
     
-    agc: Automatic gain control.
+    dt = time[1]-time[0]
+    N = len(trace)
+    
+    gates_num = int((time[-1]//time_gate)+1)
+    
+    
+    time_gate_1st_ind = 0
+    time_gate_2nd_ind = int(time_gate/dt)
+    
+    
+    
+    start_gate_inds = [(time_gate_1st_ind + i*time_gate_2nd_ind) for i in range(gates_num)] 
+    end_gate_inds = [start_gate_inds[j] + time_gate_2nd_ind  for j in range(gates_num)] 
+    
+    end_gate_inds[-1] = N
+    
+    t_rms_values   = np.zeros(gates_num+2)
+    amp_rms_values = np.zeros(gates_num+2)
+    ivalue = 1
+    for istart, iend in zip(start_gate_inds, end_gate_inds):
+        t_rms_values[ivalue]    = 0.5*(istart + iend)
+        amp_rms_values[ivalue] = np.sqrt(np.mean(np.square(trace[istart:iend])))
+        ivalue += 1 
+        
+    t_rms_values[-1] = N
+    amp_rms_values[0] = amp_rms_values[1]
+    amp_rms_values[-1] = amp_rms_values[-2]
+    
+    
+    rms_func = np.interp(range(N), t_rms_values, amp_rms_values )
+    
+    plt.plot(rms_func)
+    
+    gained_trace = trace*(np.sqrt(np.mean(np.square(trace)))/rms_func)
+    
 
-
-    """
-
-    return trace
+    return gained_trace
+        
+    
+def inst_agc(trace, time, time_gate = 10e-3 ):
+    dt = time[1]-time[0]
+    N = len(trace)
+    
+    end_samples = int(time_gate/dt)
+    
+    
+    gates_num = N - end_samples
+    time_gate_1st_ind = 0
+    time_gate_2nd_ind = int(time_gate/dt)
+    
+    start_gate_inds = [i for i in range(gates_num)] 
+    end_gate_inds = [start_gate_inds[j] + time_gate_2nd_ind  for j in range(gates_num)] 
+    
+    
+    amp_inst_values = np.zeros(N)
+    
+    ivalue = 0 
+    for istart, iend in zip(start_gate_inds, end_gate_inds):
+        amp_inst_values[ivalue] = np.sqrt(np.mean(np.square(trace[istart:iend])))
+        ivalue += 1
+    amp_inst_values[-end_samples:] = (amp_inst_values[ivalue-1])
+    
+    gained_trace = trace*(np.sqrt(np.mean(np.square(trace)))/amp_inst_values)
+    
+    return gained_trace
