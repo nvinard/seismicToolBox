@@ -2241,8 +2241,34 @@ def time2depth_section(tsection, vrmsmodel, tt):
     return zsection, zz
 
 
-def agc(data, time, agc_type = 'rms',  time_gate = 10e-3):
-        
+def agc(data: np.ndarray, time: np.ndarray, agc_type = 'inst',  time_gate = 500e-3):
+    """
+    agc: applies automatic gain control for a given dataset. 
+
+     Usage:
+         gained_data = agc(data,time,agc_type, time_gate)
+
+     Parameters
+     -----------
+     data: np.ndarray
+            Input seismic data 
+     time: np.ndarray
+            Time array
+     agc_type: string <class 'str'>
+            Type of agc to be applied. Options: 1)'inst': instantanous AGC. 2) 'rms': root-mean-square. 
+            For details, please refere to: https://wiki.seg.org/wiki/Gain_applications
+     time_gate: float <class 'float'>
+            Time gate used for agc in sec. Defualt value 500e-3.
+
+     Returns
+     -------
+     gained_data: np.ndarray
+        Data after applying AGC
+
+        AGC is python function written by Musab Al Hasani based on the book of Oz Yilmaz (https://wiki.seg.org/wiki/Gain_applications)
+
+    """
+
         num_traces = data.shape[1]
         gain_data  = np.zeros(data.shape)
         
@@ -2261,9 +2287,32 @@ def agc(data, time, agc_type = 'rms',  time_gate = 10e-3):
 
 
 
+def rms_agc(trace: np.ndarray, time: np.ndarray,  time_gate=200e-3)-> np.ndarray:
+    """
 
-def rms_agc(trace, time,  time_gate=10e-3):
-    
+    rms_agc: apply root-mean-square automatic gain control for a given trace. 
+
+     Usage:
+         gained_trace = agc(data,time,agc_type, time_gate)
+
+     Parameters
+     -----------
+     data: np.ndarray
+            Input seismic trace 
+     time: np.ndarray
+            Time array
+     time_gate: float <class 'float'>
+            Time gate used for agc in sec. Defualt value 200e-3 here, though there is  not a typecal value to be used. 
+
+     Returns
+     -------
+     gained_trace: np.ndarray
+        trace after applying RMS AGC
+
+        RMS_AGC is python function written by Musab Al Hasani based on the book of Oz Yilmaz (https://wiki.seg.org/wiki/Gain_applications)
+
+    """
+
     dt = time[1]-time[0]
     N = len(trace)
     
@@ -2303,7 +2352,31 @@ def rms_agc(trace, time,  time_gate=10e-3):
     return gained_trace
         
     
-def inst_agc(trace, time, time_gate = 10e-3 ):
+def inst_agc(trace, time, time_gate = 500e-3 ):
+    """
+
+    rms_agc: apply instantanous automatic gain control for a given trace. 
+
+     Usage:
+         gained_trace = agc(data,time,agc_type, time_gate)
+
+     Parameters
+     -----------
+     data: np.ndarray
+            Input seismic trace 
+     time: np.ndarray
+            Time array
+     time_gate: float <class 'float'>
+            Time gate used for agc in sec. typecal values between 200-500ms.
+
+     Returns
+     -------
+     gained_trace: np.ndarray
+        trace after applying instansous AGC
+
+        INST_AGC is python function written by Musab Al Hasani based on the book of Oz Yilmaz (https://wiki.seg.org/wiki/Gain_applications)
+
+    """
     dt = time[1]-time[0]
     N = len(trace)
     
@@ -2322,7 +2395,7 @@ def inst_agc(trace, time, time_gate = 10e-3 ):
     
     ivalue = 0 
     for istart, iend in zip(start_gate_inds, end_gate_inds):
-        amp_inst_values[ivalue] = np.sqrt(np.mean(np.square(trace[istart:iend])))
+        amp_inst_values[ivalue] = np.mean(np.abs(trace[istart:iend]))
         ivalue += 1
     amp_inst_values[-end_samples:] = (amp_inst_values[ivalue-1])
     
