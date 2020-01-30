@@ -315,10 +315,10 @@ def analysefold(H_SHT: np.ndarray, sortkey: int
 
     return gather_positions, gather_folds
 
-def imageseis(Data: np.ndarray, x=None, t=None, gain=1):
+def imageseis(Data0: np.ndarray, x=None, t=None, gain=1, perc=100):
 
     """
-    imageseis(Data, x=None, t=None, maxval=-1, gain=1):
+    imageseis(Data, x=None, t=None, maxval=-1, gain=1, perc=100):
 
     This function generates a seismic image plot including interactive
     handles to apply a gain and a clip
@@ -336,6 +336,8 @@ def imageseis(Data: np.ndarray, x=None, t=None, gain=1):
         x-coordinates to Plot
     t: np.ndarray of shape Data.shap[0]
         t-axis to plot
+    perc: float 
+        nth parcintile to be clipped
 
     Returns
     -------
@@ -345,7 +347,17 @@ def imageseis(Data: np.ndarray, x=None, t=None, gain=1):
 
     Musab and Nicolas added interactive gain and clip, 2019
 
+
     """
+
+    # Make a copy of the original, so that it won't change the original one ouside the scope of the function
+    Data = copy.copy(DataO)
+
+    # calculate value of nth-percintle, when perc = 100, data won't be clipped. 
+    nth_percintle = np.abs(np.percintile(Data), perc)
+
+    # clip data to the value of nth-percintile 
+    Data = np.clip(Data, a_min=-nth_percintle, a_max = nth_percintle)
 
     ns, ntraces = Data.shape
     maxval = -1
@@ -410,10 +422,11 @@ def wiggle(
     lwidth=.5,
     gain=1,
     typeD='VA',
-    color='red'):
+    color='red',
+    perc=100):
 
     """
-    wiggle(DataO, x=None, t=None, maxval=-1, skipt=1, lwidth=.5, gain=1, typeD='VA', color='red', ntmax=1e+9)
+    wiggle(DataO, x=None, t=None, maxval=-1, skipt=1, lwidth=.5, gain=1, typeD='VA', color='red', perc=100)
 
     This function generates a wiggle plot of the seismic data.
 
@@ -436,6 +449,8 @@ def wiggle(
         With or without filling positive amplitudes. Use type=None for no filling
     color: string
         Color of the traces
+    perc: float 
+        nth parcintile to be clipped
 
     Returns
     -------
@@ -447,6 +462,12 @@ def wiggle(
     """
     # Make a copy of the original, so that it won't change the original one ouside the scope of the function
     Data = copy.copy(DataO)
+
+    # calculate value of nth-percintle, when perc = 100, data won't be clipped. 
+    nth_percintle = np.abs(np.percintile(Data), perc)
+
+    # clip data to the value of nth-percintile 
+    Data = np.clip(Data, a_min=-nth_percintle, a_max = nth_percintle)
 
     ns = Data.shape[0]
     ntraces = Data.shape[1]
