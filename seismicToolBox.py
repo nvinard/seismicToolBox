@@ -19,11 +19,15 @@ generatevmodel2         : Generates a 2D velocity model
 kirk_mig                : Kirkhoff migration
 time2depth_trace        : time-to-depth conversion for a single trace in time domain
 time2depth_section      : time-to-depth conversion for a seismic section in time domain
+agc                     : applies automatic gain control for a given dataset.
 
 (C) Nicolas Vinard and Musab al Hasani, 2019, v.0.0.6
 
+- 31.01.2020 added nth-percentile clipping 
 - 16.01.2020 Added clipping in wiggle function
+- added agc functions 
 - Fixed semblanceWiggle sorting error
+
 
 
 Mention crewes
@@ -315,7 +319,7 @@ def analysefold(H_SHT: np.ndarray, sortkey: int
 
     return gather_positions, gather_folds
 
-def imageseis(Data0: np.ndarray, x=None, t=None, gain=1, perc=100):
+def imageseis(DataO: np.ndarray, x=None, t=None, gain=1, perc=100):
 
     """
     imageseis(Data, x=None, t=None, maxval=-1, gain=1, perc=100):
@@ -354,7 +358,7 @@ def imageseis(Data0: np.ndarray, x=None, t=None, gain=1, perc=100):
     Data = copy.copy(DataO)
 
     # calculate value of nth-percentile, when perc = 100, data won't be clipped. 
-    nth_percentile = np.abs(np.percentile(Data), perc)
+    nth_percentile = np.abs(np.percentile(Data, perc))
 
     # clip data to the value of nth-percintile 
     Data = np.clip(Data, a_min=-nth_percentile, a_max = nth_percentile)
@@ -464,7 +468,7 @@ def wiggle(
     Data = copy.copy(DataO)
 
     # calculate value of nth-percentile, when perc = 100, data won't be clipped. 
-    nth_percentile = np.abs(np.percentile(Data), perc)
+    nth_percentile = np.abs(np.percentile(Data, perc))
 
     # clip data to the value of nth-percentile 
     Data = np.clip(Data, a_min=-nth_percentile, a_max = nth_percentile)
@@ -2262,7 +2266,7 @@ def time2depth_section(tsection, vrmsmodel, tt):
     return zsection, zz
 
 
-def agc(data: np.ndarray, time: np.ndarray, agc_type = 'inst',  time_gate = 500e-3):
+def agc(DataO: np.ndarray, time: np.ndarray, agc_type = 'inst',  time_gate = 500e-3):
     """
     agc: applies automatic gain control for a given dataset.
 
@@ -2289,6 +2293,13 @@ def agc(data: np.ndarray, time: np.ndarray, agc_type = 'inst',  time_gate = 500e
         AGC is python function written by Musab Al Hasani based on the book of Oz Yilmaz (https://wiki.seg.org/wiki/Gain_applications)
 
     """
+    data = np.copy(DataO) 
+
+    # # calculate nth-percentile 
+    # nth_percentile = np.abs(np.percentile(data, 99))
+
+    # clip data to the value of nth-percentile 
+    # data = np.clip(data, a_min=-nth_percentile, a_max = nth_percentile)
 
 
     num_traces = data.shape[1] # number of traces to apply gain on
@@ -2297,11 +2308,11 @@ def agc(data: np.ndarray, time: np.ndarray, agc_type = 'inst',  time_gate = 500e
     # check what type of agc to use
     if agc_type == 'rms':
         for itrc in range(num_traces):
-            gain_data[:, itrc] = rms_agc(data[:, itrc], time)
+            gain_data[:, itrc] = rms_agc(data[:, itrc], time, time_gate)
 
     elif agc_type =='inst':
         for itrc in range(num_traces):
-            gain_data[:, itrc] = inst_agc(data[:, itrc], time)
+            gain_data[:, itrc] = inst_agc(data[:, itrc], time, time_gate)
 
     else:
         print('Wrong agc type!')
