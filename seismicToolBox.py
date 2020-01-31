@@ -353,11 +353,11 @@ def imageseis(Data0: np.ndarray, x=None, t=None, gain=1, perc=100):
     # Make a copy of the original, so that it won't change the original one ouside the scope of the function
     Data = copy.copy(DataO)
 
-    # calculate value of nth-percintle, when perc = 100, data won't be clipped. 
-    nth_percintle = np.abs(np.percintile(Data), perc)
+    # calculate value of nth-percentile, when perc = 100, data won't be clipped. 
+    nth_percentile = np.abs(np.percentile(Data), perc)
 
     # clip data to the value of nth-percintile 
-    Data = np.clip(Data, a_min=-nth_percintle, a_max = nth_percintle)
+    Data = np.clip(Data, a_min=-nth_percentile, a_max = nth_percentile)
 
     ns, ntraces = Data.shape
     maxval = -1
@@ -463,11 +463,11 @@ def wiggle(
     # Make a copy of the original, so that it won't change the original one ouside the scope of the function
     Data = copy.copy(DataO)
 
-    # calculate value of nth-percintle, when perc = 100, data won't be clipped. 
-    nth_percintle = np.abs(np.percintile(Data), perc)
+    # calculate value of nth-percentile, when perc = 100, data won't be clipped. 
+    nth_percentile = np.abs(np.percentile(Data), perc)
 
-    # clip data to the value of nth-percintile 
-    Data = np.clip(Data, a_min=-nth_percintle, a_max = nth_percintle)
+    # clip data to the value of nth-percentile 
+    Data = np.clip(Data, a_min=-nth_percentile, a_max = nth_percentile)
 
     ns = Data.shape[0]
     ntraces = Data.shape[1]
