@@ -23,9 +23,9 @@ agc                     : applies automatic gain control for a given dataset.
 
 (C) Nicolas Vinard and Musab al Hasani, 2019, v.0.0.6
 
-- 31.01.2020 added nth-percentile clipping 
+- 31.01.2020 added nth-percentile clipping
 - 16.01.2020 Added clipping in wiggle function
-- added agc functions 
+- added agc functions
 - Fixed semblanceWiggle sorting error
 
 
@@ -340,7 +340,7 @@ def imageseis(DataO: np.ndarray, x=None, t=None, gain=1, perc=100):
         x-coordinates to Plot
     t: np.ndarray of shape Data.shap[0]
         t-axis to plot
-    perc: float 
+    perc: float
         nth parcintile to be clipped
 
     Returns
@@ -357,10 +357,10 @@ def imageseis(DataO: np.ndarray, x=None, t=None, gain=1, perc=100):
     # Make a copy of the original, so that it won't change the original one ouside the scope of the function
     Data = copy.copy(DataO)
 
-    # calculate value of nth-percentile, when perc = 100, data won't be clipped. 
+    # calculate value of nth-percentile, when perc = 100, data won't be clipped.
     nth_percentile = np.abs(np.percentile(Data, perc))
 
-    # clip data to the value of nth-percintile 
+    # clip data to the value of nth-percintile
     Data = np.clip(Data, a_min=-nth_percentile, a_max = nth_percentile)
 
     ns, ntraces = Data.shape
@@ -453,7 +453,7 @@ def wiggle(
         With or without filling positive amplitudes. Use type=None for no filling
     color: string
         Color of the traces
-    perc: float 
+    perc: float
         nth parcintile to be clipped
 
     Returns
@@ -467,10 +467,10 @@ def wiggle(
     # Make a copy of the original, so that it won't change the original one ouside the scope of the function
     Data = copy.copy(DataO)
 
-    # calculate value of nth-percentile, when perc = 100, data won't be clipped. 
+    # calculate value of nth-percentile, when perc = 100, data won't be clipped.
     nth_percentile = np.abs(np.percentile(Data, perc))
 
-    # clip data to the value of nth-percentile 
+    # clip data to the value of nth-percentile
     Data = np.clip(Data, a_min=-nth_percentile, a_max = nth_percentile)
 
     ns = Data.shape[0]
@@ -742,13 +742,15 @@ def semblanceWiggle(
     plt.close()
 
     picks = np.asarray(picks)
-    picks = np.sort(picks, axis=1)
-    picks = np.insert(picks, 0, t[0], axis=0)
-    picks[0,1] = picks[1,1]
-    picks = np.insert(picks, len(picks), picks[len(picks)-1,1], axis=0)
-    picks[len(picks)-1,0] = t[len(t)-1]
-    v_picks = picks[:,1]
-    t_picks = picks[:,0]
+    v_picks = picks[:,0]
+    t_picks = picks[:,1]
+    index_sort = np.argsort(t_picks)
+    t_picks = t_picks[index_sort]
+    v_picks = v_picks[index_sort]
+    t_picks = np.insert(t_picks, 0, 0)
+    v_picks = np.insert(v_picks, 0, v_picks[0])
+    t_picks = np.insert(t_picks, len(t_picks), t[-1])
+    v_picks = np.insert(v_picks, len(v_picks), v_picks[-1])
 
     return v_picks, t_picks
 
@@ -1102,11 +1104,11 @@ def nmo_vlog(
                     NMOedCMP[it, ix] = CMPgather[it+itnmo1-1,ix]
 
     fig, ax = plt.subplots()
-    ax = wiggle(CMPgather)
+    wiggle(CMPgather)
     ax.set_title('Original CMP gather')
     fig.tight_layout()
     fig, ax = plt.subplots()
-    ax = wiggle(NMOedCMP)
+    wiggle(NMOedCMP)
     ax.set_title('NMO-ed CMP gather')
     fig.tight_layout()
 
@@ -1264,7 +1266,7 @@ def nmo_stack(
     """
 
     # Read the amount of time-samples and traces from the size of the datamatrix
-    nt,ntr=cmp_sorted.shape
+    nt,ntr=cmpsorted_data.shape
 
     # Amount of cmp gathers equals the length of the midpoint-array
     cmpnr = len(midpoints)
@@ -1279,8 +1281,8 @@ def nmo_stack(
         fold = folds[l]
 
         # positioning in the cmpsorted dataset
-        gather = cmp_sorted[:, (trace_num-1):(trace_num+fold)]
-        gather_hdr = cmp_sorted[:, (trace_num-1):(trace_num+fold)]
+        gather = cmpsorted_data[:, (trace_num-1):(trace_num+fold)]
+        gather_hdr = cmpsorted_hdr[:, (trace_num-1):(trace_num+fold)]
 
         # NMO and stack the selected CMP-gather
         nmoed = nmo_vxt(gather, gather_hdr, H,  vmodel[:,l], smute)
@@ -2293,12 +2295,12 @@ def agc(DataO: np.ndarray, time: np.ndarray, agc_type = 'inst',  time_gate = 500
         AGC is python function written by Musab Al Hasani based on the book of Oz Yilmaz (https://wiki.seg.org/wiki/Gain_applications)
 
     """
-    data = np.copy(DataO) 
+    data = np.copy(DataO)
 
-    # # calculate nth-percentile 
+    # # calculate nth-percentile
     # nth_percentile = np.abs(np.percentile(data, 99))
 
-    # clip data to the value of nth-percentile 
+    # clip data to the value of nth-percentile
     # data = np.clip(data, a_min=-nth_percentile, a_max = nth_percentile)
 
 
