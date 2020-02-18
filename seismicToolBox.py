@@ -30,8 +30,11 @@ agc                     : applies automatic gain control for a given dataset.
 
 
 
-Mention crewes
-This code is based on xxx.m found in the CREWES Matlab library at www.crewes.org
+Many of the functions here were developed by CREWES and were originally written in MATLAB.
+In the comments of every function we translated from CREWES we refer to its function name
+and the CREWES Matlab library at www.crewes.org.
+Other functions were translated from MATLAB to Python and originally written by Max Holicki
+for the course "Geophyiscal methods for subsurface characterization" tought at TU Delft.
 
 """
 
