@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: seismicToolBox
+Version: 0.0.11
+Summary: A python toolbox with basic stuff for seismics
+Home-page: https://github.com/nvinard/seismicToolBox
+Author: Nicolas Vinard, Musab al Hasani
+Author-email: n.a.vinard@tudelft.nl, m.m.k.alhasani@tudelft.nl
+License: UNKNOWN
+Description: # seismicToolBox
+        Some Python functions for sorting, plotting, semblance analysis, stacking, and migrating seismic data
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
