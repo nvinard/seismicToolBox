@@ -1,15 +1,24 @@
 """
 A python module for plotting and manipulating seismic data and headers,
-kirchhoff migration and more. Contains the following functions
+kirchhoff migration and more. Contains the following functions.
+
+Contains two classes:
+Main class seismicToolBox and the child STH.
+seismicToolBox is given the entire data with headers.
+STH is only given the headers.
 
 wiggle                  : Seismic wiggle plot
 imageseis               : Interactive seismic image
-
+plothdr                 : Plots header data
 sorthdr                 : sort seismic header
+analysefold             : Positions of gathers and their folds
+
+
+
 sortdata                : sort seismic data
 selectCMP               : select a CMP gather with respect to its midpoint position
-analysefold             : Positions of gathers and their folds
-plothdr                 : Plots header data
+
+
 semblanceWiggle         : Interactive semblance plot for velocity analysis
 apply_nmo               : Applies nmo correction
 nmo_v                   : Applies nmo to single CMP gather for constant velocity
@@ -23,7 +32,8 @@ agc                     : applies automatic gain control for a given dataset.
 
 (C) Nicolas Vinard and Musab al Hasani, 2020, v.2.0.0
 
-- 29.07.2020 Rewritten ToolBox to class with wiggle, imageseis and print_beta functions
+- 29.07.2020 Rewritten ToolBox to class with wiggle, imageseis, print_beta functions
+  plothdr, sorthdr, analysefold and a class called STH
 - 31.01.2020 added nth-percentile clipping
 - 16.01.2020 Added clipping in wiggle function
 - added agc functions
@@ -380,3 +390,187 @@ class seismicToolBox(object):
         s_gain.on_changed(update)
 
         return img
+
+
+    def plothdr(self, trmin=None, trmax=None):
+
+        """
+        plothdr(trmin, trmax) - plots the header data
+
+        Optional parameters
+        -------------------
+        trmin: int
+            Start with trace trmin
+        trmax: int
+            End with trace trmax, int
+
+        Returns
+        -------
+        Figures:
+            four plots:
+            (1) shot position
+            (2) CMP
+            (3) receiver position
+            (4) trace offset
+
+        Translated to Python from Matlab by Musab al Hasani and Nicolas Vinard, 2019
+
+        """
+
+        if trmin is None:
+            trmin = 0
+        if trmax is None:
+            trmax = np.size(self.STH[0,:])
+
+        fig, ax = plt.subplots(nrows=2,ncols=2, figsize=(10,8))
+
+        ax[0,0].plot(np.arange(trmin, trmax, 1), self.STH[1, trmin:trmax], 'x')
+        ax[0,1].plot(np.arange(trmin, trmax, 1), self.STH[3, trmin:trmax], 'x')
+        ax[1,0].plot(np.arange(trmin, trmax, 1), self.STH[2, trmin:trmax], 'x')
+        ax[1,1].plot(np.arange(trmin, trmax, 1), self.STH[4, trmin:trmax], 'x')
+        ax[0,0].set(title = 'shot positions', xlabel = 'trace number', ylabel = 'shot position [m]')
+        ax[0,1].set(title = 'common midpoint positions (CMPs)', xlabel = 'trace number', ylabel = 'CMP [m]')
+        ax[1,0].set(title = 'receiver positions', xlabel = 'trace number', ylabel = 'receiver position [m]')
+        ax[1,1].set(title = 'trace offset', xlabel = 'trace number', ylabel = 'offset [m]')
+        fig.tight_layout()
+
+    def sorthdr(self, sortkey1: int, sortkey2 = None)->np.ndarray:
+        """
+        sorted_header = sorthdr(H_SHT, sortkey1, sortkey2 = None)
+
+        Sorts the input header according to the sortkey1 value as primary sort,
+        and within sortykey1 the header is sorted according to sortkey2.
+
+        Valid values for sortkey are:
+            1 = Common Shot
+            2 = Common Receiver
+            3 = Common Midpoint (CMP)
+            4 = Common Offset
+
+        Parameters
+        ----------
+        H_SHT: np.ndarray of shape (5, # traces)
+            Header containing information of shot, receiver, CMP and offset positions
+        sortkey1: int
+            Primary sort key by which to sort the header
+
+        Optional parameters
+        -------------------
+        sortkey2: int
+            Secondary sort key by which to sort the header
+
+        Returns
+        -------
+        H_SRT: np.ndarray of shape (5, # traces)
+            Sorted header
+
+        Translated to Python from Matlab by Nicolas Vinard and Musab al Hasani, 2019
+
+        """
+
+        if sortkey2 is None:
+            if sortkey1 == 4:
+                sortkey2 = 3
+            if sortkey1 == 1:
+                sortkey2 = 2
+            if sortkey1 == 2:
+                sortkey2 = 1
+            if sortkey1 == 3:
+                sortkey2 = 4
+
+        H_SHT = self.STH
+        index_sort = np.lexsort((H_SHT[sortkey2, :], H_SHT[sortkey1, :]))
+
+        H_SRT = H_SHT[:, index_sort]
+
+        return STH(H_SRT)
+
+    def analysefold(self, sortkey: int)->tuple([np.ndarray, np.ndarray]):
+
+        """
+        positions, folds = analysefold(sortkey)
+
+        This function gives the positions of the gathers, such as CMP's or
+        Common-Offset gathers, as well as their folds. Furthermore, a
+        crossplot is generated.
+
+        Analysefold analyzes the fold of a dataset according to the value of sortkey:
+            1 = Common Shot
+            2 = Common Receiver
+            3 = Common Midpoint (CMP)
+            4 = Common Offset
+
+        Parameters
+        ----------
+        sortkey: int
+            Sorting key
+
+        Returns
+        -------
+        positions: np.ndarray
+            Gather positions
+        folds: np.ndarray
+            Gather-folds
+
+
+        Translated to Python from Matlab by Musab al Hasani and Nicolas Vinard, 2019
+
+        """
+
+        # Read the amount of time-samples and traces from the shape of the datamatrix
+        H_SHT = self.STH
+        nt, ntr = H_SHT.shape
+
+        # Sort the header
+        H_SRT = self.sorthdr(sortkey).STH
+
+        # Midpoint initialization, midpoint distance and fold
+        gather_positions = H_SRT[1,0]
+        gather_positions = np.array(gather_positions)
+        gather_positions = np.reshape(gather_positions, (1,1))
+        gather_folds = 1
+        gather_folds = np.array(gather_folds)
+        gather_folds = np.reshape(gather_folds, (1,1))
+
+        # Gather trace counter initialization
+        # l is the amount of traces in a gather
+        l = 0
+
+        # Distance counter initialization
+        # m is the amount of distances in the sorted dataset
+        m = 0
+
+        for k in range(1, ntr):
+
+            if H_SRT[sortkey, k] == gather_positions[m]:
+                l = l + 1
+            else:
+                if m == 0:
+                    gather_folds[0,0] = l
+                else:
+                    gather_folds = np.append(gather_folds, l)
+
+                m = m + 1
+                gather_positions = np.append(gather_positions, H_SRT[sortkey, k])
+                l = 0
+
+        gather_folds = gather_folds+1
+
+        # Remove first superfluous entry in gather_positions
+        gather_positions = gather_positions[1:]
+
+        # Make a plot
+        fig, ax = plt.subplots(figsize=(8,6))
+        ax.plot(gather_positions, gather_folds, 'x')
+        ax.set_title('Amount of traces per gather')
+        ax.set_xlabel('gather-distance [m]')
+        ax.set_ylabel('fold')
+        fig.tight_layout()
+
+        return gather_positions, gather_folds
+
+class STH(seismicToolBox):
+
+    def __init__(self, STH):
+        self.STH = STH
+
