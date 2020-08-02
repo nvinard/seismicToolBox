@@ -49,6 +49,7 @@ for the course "Geophyiscal methods for subsurface characterization" tought at T
 
 """
 
+import segypy
 import struct, sys
 import numpy as np
 import matplotlib
@@ -66,7 +67,13 @@ from tqdm import tnrange
 class seismicToolBox(object):
 
     '''
-    The seismicToolBox contains many functions for plotting Headers and Data and manipulating them.
+    The seismicToolBox contains many functions for plotting both headers and data and manipulating then.
+    It takes as input the path to a segy file or a mat (matlab) file.
+
+    TODO: make sure that segy files inherit all functions but that the mat files
+    inherit only functions related to headers.
+
+
 
     '''
 
