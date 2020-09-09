@@ -2,6 +2,8 @@
 A python module for plotting and manipulating seismic data and headers,
 kirchhoff migration and more. Contains the following functions
 
+load_header             : load mat file header
+load_segy               : load segy dataset
 sorthdr                 : sort seismic header
 sortdata                : sort seismic data
 selectCMP               : select a CMP gather with respect to its midpoint position
@@ -21,13 +23,13 @@ time2depth_trace        : time-to-depth conversion for a single trace in time do
 time2depth_section      : time-to-depth conversion for a seismic section in time domain
 agc                     : applies automatic gain control for a given dataset.
 
-(C) Nicolas Vinard and Musab al Hasani, 2019, v.0.0.6
+(C) Nicolas Vinard and Musab al Hasani, 2020, v.0.0.7
 
+- 9.9.2020 added load_header and load_segy
 - 31.01.2020 added nth-percentile clipping
 - 16.01.2020 Added clipping in wiggle function
 - added agc functions
 - Fixed semblanceWiggle sorting error
-
 
 
 Many of the functions here were developed by CREWES and were originally written in MATLAB.
@@ -46,7 +48,61 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button
 import sys
 from typing import Tuple
-from tqdm import tnrange
+#from tqdm import tnrange
+from utils import segypy
+from scipy.io import loadmat
+
+
+### LOAD HEADER OR SEGY DATA ####
+
+def load_header(file_path)->np.ndarray:
+    """
+
+    header = load_header(path_to_file)
+
+    Parameters
+    ----------
+    file_path: string
+        Path to mat file
+
+    Returns
+    -------
+    SH: np.ndarray of shape (5, # traces)
+        Header containing information of shot, receiver, CMP and offset positions
+
+    """
+    SH = loadmat(file_path)
+
+    return SH['H_SHT']
+
+def load_segy(file_path)->tuple([np.ndarray, np.ndarray, np.ndarray]):
+    """
+
+    Data, SH, STH  = load_segy(path_to_file)
+
+    Parameters
+    ----------
+    file_path: string
+        Path to mat file
+
+    Returns
+    -------
+    Data: np.ndarray of shape (# time samples, # traces)
+        Seismic data
+    SH: np.ndarray of shape (5, # traces)
+        Header containing information of shot, receiver, CMP and offset positions
+    STH: np.ndarray
+        Trace header
+
+    """
+
+    segyDataset = segypy.readSegy(file_path)
+    Data = segyDataset[0]
+    SH = segyDataset[2]
+    STH = segyDataset[1]
+
+    return Data, SH, STH
+
 
 ##################################################
 ########## HEADER AND DATA MANIPULATION ##########
