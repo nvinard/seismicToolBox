@@ -49,7 +49,7 @@ from matplotlib.widgets import Slider, Button
 import sys
 from typing import Tuple
 #from tqdm import tnrange
-from utils import segypy
+#from utils import segypy
 from scipy.io import loadmat
 
 
@@ -450,7 +450,7 @@ def imageseis(DataO: np.ndarray, x=None, t=None, gain=1, perc=100):
     plt.subplots_adjust(left=0.25, bottom=0.3)
     img = plt.pcolormesh(x, t, Data*gain, vmin=-1*maxval, vmax=maxval, cmap='seismic')
     cb = plt.colorbar()
-    plt.axis('normal')
+    plt.axis('auto')
     plt.xlabel(xLabel)
     plt.ylabel(tLabel)
     plt.gca().invert_yaxis()
