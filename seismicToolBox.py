@@ -450,7 +450,7 @@ def imageseis(DataO: np.ndarray, x=None, t=None, gain=1, perc=100):
     plt.subplots_adjust(left=0.25, bottom=0.3)
     img = plt.pcolormesh(x, t, Data*gain, vmin=-1*maxval, vmax=maxval, cmap='seismic')
     cb = plt.colorbar()
-    plt.axis('auto')
+    plt.axis('normal')
     plt.xlabel(xLabel)
     plt.ylabel(tLabel)
     plt.gca().invert_yaxis()
@@ -1173,6 +1173,7 @@ def nmo_vlog(
 
     return NMOedCMP
 
+
 def nmo_stack(
     cmpsorted_data: np.ndarray,
     cmpsorted_hdr: np.ndarray,
@@ -1182,8 +1183,7 @@ def nmo_stack(
     vmodel: np.ndarray,
     smute=0
     )->np.ndarray:
-
-    #
+	'''
     zosection = nmo_stack(cmpsorted_data, cmpsorted_hdr, midpoints, folds, H, vmodel, smute=None)
 
     This function generates a stacked zero-offset section from a CMP-sorted
@@ -1218,62 +1218,61 @@ def nmo_stack(
         Zero-offset stacked seismic section
 
     Translated to Python from Matlab by Nicolas Vinard and Musab al Hasani, 2019
-
-
-
+	'''
     # Read the amount of time-samples and traces from the size of the data matrix
-    nt,ntr=cmpsorted_data.shape
+	nt,ntr=cmpsorted_data.shape
 
     # Amount of cmp gathers equals the length of the midpoint-array
-    cmpnr = len(midpoints)
+	cmpnr = len(midpoints)
 
     # Initialise tracenr in cmpsorted dataset
-    tracenr = 0
+	tracenr = 0
 
     # Initialize zosection
-    zosection = np.zeros((nt, cmpnr))
+	zosection = np.zeros((nt, cmpnr))
 
-    print('Processing CMPs. This may take some time...')
-    print(' ')
+	print('Processing CMPs. This may take some time...')
+	print(' ')
 
     # Update message every tenth percent
-    printcounter = 0
-    tenPerc = int(cmpnr/10)
-    percStatus = 0
+	printcounter = 0
+	tenPerc = int(cmpnr/10)
+	percStatus = 0
 
-    for l in range(0, cmpnr):
-
+	for l in range(0, cmpnr):
+	
         # CMP midpoint in [m] (just for display), and associated fold
-        midpoint = midpoints[l]
-        fold = folds[l]
+		midpoint = midpoints[l]
+		fold = folds[l]
 
         # positioning in the cmpsorted dataset
-        gather = cmpsorted_data[:, tracenr:(tracenr+fold)]
-        gather_hdr = cmpsorted_hdr[:, tracenr:(tracenr+fold)]
-
-        # NMO and stack the selected CMP-gather
-        nmoed = nmo_vxt(gather, gather_hdr, H,  vmodel[:,l], smute)
-        zotrace = stack_cmp(nmoed)
-        zosection[:,l] = zotrace[:,0]
-
-        # go to traceposition of next CMP in cmpsorted dataset
-        tracenr = tracenr + fold
+		gather = cmpsorted_data[:, tracenr:(tracenr+fold)]
+		gather_hdr = cmpsorted_hdr[:, tracenr:(tracenr+fold)]
+		
+		# NMO and stack the selected CMP-gather
+		nmoed = nmo_vxt(gather, gather_hdr, H,  vmodel[:,l], smute)
+		zotrace = stack_cmp(nmoed)
+		zosection[:,l] = zotrace[:,0]
+		
+		# go to traceposition of next CMP in cmpsorted dataset
+		tracenr = tracenr + fold
 
         # Update message
-        if printcounter == tenPerc:
-            percStatus += 10
-            print('Finished stacking {} traces out of {}. {}%'.format(l, cmpnr, percStatus))
-            printcounter=0
+		if printcounter == tenPerc:
+			percStatus += 10
+			print('Finished stacking {} traces out of {}. {}%'.format(l, cmpnr, percStatus))
+			printcounter=0
 
-        printcounter+=1
+		printcounter+=1
 
-    print('Done')
+	print('Done')
 
-    return zosection
+	return zosection
 
 
 
-"""
+
+'''
 def nmo_stack(
     cmpsorted_data: np.ndarray,
     cmpsorted_hdr: np.ndarray,
@@ -1284,7 +1283,7 @@ def nmo_stack(
     smute=0
     )->np.ndarray:
 
-    '''
+    """
     zosection = nmo_stack(cmpsorted_data, cmpsorted_hdr, midpoints, folds, H, vmodel, smute=None)
 
     This function generates a stacked zero-offset section from a CMP-sorted
@@ -1320,7 +1319,7 @@ def nmo_stack(
 
     Translated to Python from Matlab by Nicolas Vinard and Musab al Hasani, 2019
 
-    '''
+    """
 
     # Read the amount of time-samples and traces from the size of the datamatrix
     nt,ntr=cmpsorted_data.shape
@@ -1350,8 +1349,8 @@ def nmo_stack(
         trace_num = trace_num + fold
 
     return zosection
+'''
 
-"""
 
 def stackplot(gather: np.ndarray, H: dict)->np.ndarray:
 
@@ -1393,7 +1392,7 @@ def stackplot(gather: np.ndarray, H: dict)->np.ndarray:
     stack = stack.reshape(len(stack), 1)
 
     return stack
-
+
 def nmo_vxt(
     CMPgather: np.ndarray,
     H_CMPgather: np.ndarray,
@@ -1672,8 +1671,8 @@ def vel_zeroOffset(xs, x1, x2, t1, t2):
 
     return velz0
 
-'''
-# kirk_mig with fancy update toolbar. uncomment if you want to use it and then comment the other kirk_mig function
+
+# kirk_mig with fancy update toolbar. uncomment if you want to use it and then comment the other kirk_mig function'''
 def kirk_mig(dataIn, vModel, t, x):
 
     """
@@ -1881,9 +1880,7 @@ def kirk_mig(dataIn, vModel, t, x):
     dataMig = conv45(dataMig)
 
     return dataMig, tmig, xmig
-
 '''
-
 def cos_taper(sp,ep,samp=1):
 
     dd=[]
