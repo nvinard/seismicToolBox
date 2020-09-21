@@ -1173,7 +1173,6 @@ def nmo_vlog(
 
     return NMOedCMP
 
-"""
 def nmo_stack(
     cmpsorted_data: np.ndarray,
     cmpsorted_hdr: np.ndarray,
@@ -1272,10 +1271,9 @@ def nmo_stack(
 
     return zosection
 
+
+
 """
-
-
-
 def nmo_stack(
     cmpsorted_data: np.ndarray,
     cmpsorted_hdr: np.ndarray,
@@ -1286,7 +1284,7 @@ def nmo_stack(
     smute=0
     )->np.ndarray:
 
-    """
+    '''
     zosection = nmo_stack(cmpsorted_data, cmpsorted_hdr, midpoints, folds, H, vmodel, smute=None)
 
     This function generates a stacked zero-offset section from a CMP-sorted
@@ -1322,7 +1320,7 @@ def nmo_stack(
 
     Translated to Python from Matlab by Nicolas Vinard and Musab al Hasani, 2019
 
-    """
+    '''
 
     # Read the amount of time-samples and traces from the size of the datamatrix
     nt,ntr=cmpsorted_data.shape
@@ -1353,6 +1351,7 @@ def nmo_stack(
 
     return zosection
 
+"""
 
 def stackplot(gather: np.ndarray, H: dict)->np.ndarray:
 
@@ -1673,7 +1672,7 @@ def vel_zeroOffset(xs, x1, x2, t1, t2):
 
     return velz0
 
-
+'''
 # kirk_mig with fancy update toolbar. uncomment if you want to use it and then comment the other kirk_mig function
 def kirk_mig(dataIn, vModel, t, x):
 
@@ -1883,6 +1882,8 @@ def kirk_mig(dataIn, vModel, t, x):
 
     return dataMig, tmig, xmig
 
+'''
+
 def cos_taper(sp,ep,samp=1):
 
     dd=[]
@@ -1927,7 +1928,7 @@ def conv45(dataIn):
 
     return aryout
 
-'''
+
 def kirk_mig(
     dataIn: np.ndarray,
     vModel,
@@ -2146,7 +2147,7 @@ def kirk_mig(
     print('Done')
 
     return dataMig, tmig, xmig
-'''
+
 
 def time2depth_trace(ttrace, vrmsmodel, tt):
 
