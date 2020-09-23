@@ -1614,7 +1614,7 @@ def generatevmodel2(
 
     # Plot velocity model
     plt.figure()
-    plt.pcolormesh(midpnts, np.arange(0,H['dt']*H['ns'],H['dt']), vmodel)
+    plt.pcolormesh(midpnts, np.arange(0,H['dt']/1000*H['ns'],H['dt']/1000), vmodel)
     plt.xlabel('CMP position [m]')
     plt.ylabel('two-way time [ms]')
     plt.title('velocity model')
