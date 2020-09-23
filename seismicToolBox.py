@@ -450,7 +450,7 @@ def imageseis(DataO: np.ndarray, x=None, t=None, gain=1, perc=100):
     plt.subplots_adjust(left=0.25, bottom=0.3)
     img = plt.pcolormesh(x, t, Data*gain, vmin=-1*maxval, vmax=maxval, cmap='seismic')
     cb = plt.colorbar()
-    plt.axis('normal')
+    plt.axis('auto')
     plt.xlabel(xLabel)
     plt.ylabel(tLabel)
     plt.gca().invert_yaxis()
@@ -1240,7 +1240,7 @@ def nmo_stack(
 	percStatus = 0
 
 	for l in range(0, cmpnr):
-	
+
         # CMP midpoint in [m] (just for display), and associated fold
 		midpoint = midpoints[l]
 		fold = folds[l]
@@ -1248,12 +1248,12 @@ def nmo_stack(
         # positioning in the cmpsorted dataset
 		gather = cmpsorted_data[:, tracenr:(tracenr+fold)]
 		gather_hdr = cmpsorted_hdr[:, tracenr:(tracenr+fold)]
-		
+
 		# NMO and stack the selected CMP-gather
 		nmoed = nmo_vxt(gather, gather_hdr, H,  vmodel[:,l], smute)
 		zotrace = stack_cmp(nmoed)
 		zosection[:,l] = zotrace[:,0]
-		
+
 		# go to traceposition of next CMP in cmpsorted dataset
 		tracenr = tracenr + fold
 
@@ -1392,7 +1392,9 @@ def stackplot(gather: np.ndarray, H: dict)->np.ndarray:
     stack = stack.reshape(len(stack), 1)
 
     return stack
-
+
+
+
 def nmo_vxt(
     CMPgather: np.ndarray,
     H_CMPgather: np.ndarray,
@@ -1672,7 +1674,9 @@ def vel_zeroOffset(xs, x1, x2, t1, t2):
     return velz0
 
 
-# kirk_mig with fancy update toolbar. uncomment if you want to use it and then comment the other kirk_mig function'''
+# kirk_mig with fancy update toolbar. uncomment if you want to use it and then comment the other kirk_mig function
+
+'''
 def kirk_mig(dataIn, vModel, t, x):
 
     """
