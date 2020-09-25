@@ -626,7 +626,7 @@ def plothdr(Header: np.ndarray, trmin=None, trmax=None):
     if trmax == None:
         trmax = np.max(np.size(Header[0,:]))
 
-    fig, ax = plt.subplots(2,2, figsize=(10,8))
+    fig, ax = plt.subplots(2,2, figsize=(10,8), sharex=True)
 
     ind = np.array([2, 4, 3, 1])
 
@@ -796,9 +796,12 @@ def semblanceWiggle(
     ax.set_ylabel('Time, s', fontsize=12)
     ax.set_title('Left-click: pick \n - Middle-click: delete pick \n - Enter: save picks ')
     fig.tight_layout(pad=2.0, h_pad=1.0)
-    plt.waitforbuttonpress()
-    picks = plt.ginput(-1)
+    plt.waitforbuttonpress(timeout=15)
+    picks = plt.ginput(n=-1,timeout=15)
     plt.close()
+
+    if not picks:
+        sys.exit("No time-velocity picks selected. Closing.")
 
     picks = np.asarray(picks)
     v_picks = picks[:,0]
@@ -1098,13 +1101,14 @@ def nmo_vlog(
     t_plot = np.arange(0,dt*nt, dt)
     v2 = np.interp(t_plot, t, v)
 
-    fig, ax = plt.subplots(figsize=(8,6))
-    ax.plot(v2, t_plot)
-    ax.scatter(v,t, color='red')
-    ax.invert_yaxis()
-    ax.set_ylabel('two-way traveltime [ms]')
-    ax.set_xlabel('velocity [m/s]')
-    fig.tight_layout()
+    fig = plt.figure(figsize=(12,5))
+    plt.subplot(1,3,2)
+    plt.plot(v2, t_plot)
+    plt.scatter(v,t, color='red')
+    plt.gca().invert_yaxis()
+    plt.ylabel('two-way traveltime [ms]')
+    plt.xlabel('velocity [m/s]')
+    plt.title("time-velocity picks")
 
     c = v2
     dt = dt*1e-03 # Now time is needed in s
@@ -1162,14 +1166,13 @@ def nmo_vlog(
                 if it+itnmo1 == nt:
                     NMOedCMP[it, ix] = CMPgather[it+itnmo1-1,ix]
 
-    fig, ax = plt.subplots()
+    plt.subplot(1,3,1)
     wiggle(CMPgather)
-    ax.set_title('Original CMP gather')
-    fig.tight_layout()
-    fig, ax = plt.subplots()
+    plt.title('Original CMP gather')
+    plt.subplot(1,3,3)
     wiggle(NMOedCMP)
-    ax.set_title('NMO-ed CMP gather')
-    fig.tight_layout()
+    plt.title('NMO-ed CMP gather')
+    fig.tight_layout(pad=1.0)
 
     return NMOedCMP
 
@@ -1380,16 +1383,24 @@ def stackplot(gather: np.ndarray, H: dict)->np.ndarray:
     t = np.arange(0, H['ns']*H['dt']/1000000, H['dt']/1000000)
     d = 0.0
 
-    fig, ax = plt.subplots(figsize=(3,10))
-    ax.plot(stack, t, color='green')
-    ax.set_title('stacked trace', fontweight='bold')
-    ax.set_ylabel('time [s]')
-    ax.set_xlabel('amplitude')
-    ax.fill_betweenx(t,d,stack, where=(stack>d), color='green')
-    ax.invert_yaxis()
-    fig.tight_layout()
-
     stack = stack.reshape(len(stack), 1)
+    gather2 = np.append(gather, stack, axis=1)
+
+    fig = plt.figure(figsize=(12,5))
+    plt.subplot(131)
+    wiggle2(gather,t=t)
+    plt.title("Input gather")
+    plt.subplot(132)
+    wiggle2(gather2, t=t)
+    plt.title("Input gather including stacked trace")
+    plt.subplot(133)
+    plt.plot(stack, t, color='green')
+    plt.gca().fill_betweenx(t,d,stack[:,0], where=(stack[:,0]>d), color='green')
+    plt.gca().invert_yaxis()
+    plt.ylabel("time [s]")
+    plt.xlabel("amplitude")
+    plt.title("stacked trace")
+    fig.tight_layout()
 
     return stack
 
