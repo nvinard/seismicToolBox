@@ -796,12 +796,14 @@ def semblanceWiggle(
     ax.set_ylabel('Time, s', fontsize=12)
     ax.set_title('Left-click: pick \n - Middle-click: delete pick \n - Enter: save picks ')
     fig.tight_layout(pad=2.0, h_pad=1.0)
-    plt.waitforbuttonpress(timeout=15)
+    #plt.waitforbuttonpress(timeout=15)
     picks = plt.ginput(n=-1,timeout=15)
     plt.close()
 
+
     if not picks:
         sys.exit("No time-velocity picks selected. Closing.")
+
 
     picks = np.asarray(picks)
     v_picks = picks[:,0]
@@ -939,6 +941,65 @@ def apply_nmo(
                     NMOedCMP[it, ix] = CMPgather[it+itnmo1-1,ix]
 
     return NMOedCMP
+
+
+def semblance(
+    cmp_sorted_data: np.ndarray,
+    cmp_sorted_header: np.ndarray,
+    H,
+    cmp_positions: list,
+    vmin=1500,vmax=4000, vstep=25
+    )->list:
+
+    """
+    tvpicks = semblance(cmp_sorted_data, cmp_sorted_header, H, cmp_positions, vmin=1500, vmax=4000, vstep=25)
+
+    Example: cmp_positions = [800, 1200, 2000, 3000]
+
+    This function calls semblance for the given list of cmp positions
+
+    Parameters
+    ----------
+    cmp_sorted_data gather: np.ndarray
+        cmp sorted data
+    cmp_sorted_header: np.ndarray
+        cmp sorted header
+    H:
+        Seismic data header
+    cmp_positions: list,
+        list of cmp positions (see Example above)
+
+    Optinal parameters
+    ------------------
+    vmin: float
+        minimum velocity
+    vmax: float
+        maximum velocity
+    vstep: float
+        velocity increment
+
+    Returns
+    -------
+    tvpicks: list
+        list of travel-time picks required for generatevmodel2
+
+    Written by Musab al Hasani and Nicolas Vinard, 2020
+
+    """
+
+    tpicks_list = []
+    vpicks_list = []
+
+    for i, cmp_position in enumerate(cmp_positions):
+        cmp, H_cmp = selectCMP(cmp_sorted_data, cmp_sorted_header, cmp_position)
+        vpicks, tpicks = semblanceWiggle(cmp, H_cmp, H, vmin=vmin, vmax=vmax, vstep=vstep)
+        tpicks_list.append(tpicks)
+        vpicks_list.append(vpicks)
+
+    tvpicks = list([tpicks_list, vpicks_list])
+
+    return tvpicks
+
 
 def nmo_v(
     cmp_gather: np.ndarray,
