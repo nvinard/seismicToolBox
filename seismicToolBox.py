@@ -628,6 +628,7 @@ def plothdr(Header: np.ndarray, trmin=None, trmax=None):
 
     fig, ax = plt.subplots(2,2, figsize=(10,8), sharex=True)
 
+
     ind = np.array([2, 4, 3, 1])
 
     ax[0,0].plot(np.arange(trmin, trmax, 1), Header[1, trmin:trmax], 'x')
@@ -638,7 +639,9 @@ def plothdr(Header: np.ndarray, trmin=None, trmax=None):
     ax[0,1].set(title = 'common midpoint positions (CMPs)', xlabel = 'trace number', ylabel = 'CMP [m]')
     ax[1,0].set(title = 'receiver positions', xlabel = 'trace number', ylabel = 'receiver position [m]')
     ax[1,1].set(title = 'trace offset', xlabel = 'trace number', ylabel = 'offset [m]')
-    fig.tight_layout()
+    ax[0,0].xaxis.set_tick_params(which='both', labelbottom=True)
+    ax[0,1].xaxis.set_tick_params(which='both', labelbottom=True)
+    fig.tight_layout(pad=1)
 
 
 ##################################################
@@ -1247,7 +1250,7 @@ def nmo_stack(
     vmodel: np.ndarray,
     smute=0
     )->np.ndarray:
-	'''
+    '''
     zosection = nmo_stack(cmpsorted_data, cmpsorted_hdr, midpoints, folds, H, vmodel, smute=None)
 
     This function generates a stacked zero-offset section from a CMP-sorted
@@ -1282,56 +1285,56 @@ def nmo_stack(
         Zero-offset stacked seismic section
 
     Translated to Python from Matlab by Nicolas Vinard and Musab al Hasani, 2019
-	'''
+    '''
     # Read the amount of time-samples and traces from the size of the data matrix
-	nt,ntr=cmpsorted_data.shape
+    nt,ntr=cmpsorted_data.shape
 
     # Amount of cmp gathers equals the length of the midpoint-array
-	cmpnr = len(midpoints)
+    cmpnr = len(midpoints)
 
     # Initialise tracenr in cmpsorted dataset
-	tracenr = 0
+    tracenr = 0
 
     # Initialize zosection
-	zosection = np.zeros((nt, cmpnr))
+    zosection = np.zeros((nt, cmpnr))
 
-	print('Processing CMPs. This may take some time...')
-	print(' ')
+    print('Processing CMPs. This may take some time...')
+    print(' ')
 
     # Update message every tenth percent
-	printcounter = 0
-	tenPerc = int(cmpnr/10)
-	percStatus = 0
+    printcounter = 0
+    tenPerc = int(cmpnr/10)
+    percStatus = 0
 
-	for l in range(0, cmpnr):
+    for l in range(0, cmpnr):
 
         # CMP midpoint in [m] (just for display), and associated fold
-		midpoint = midpoints[l]
-		fold = folds[l]
+        midpoint = midpoints[l]
+        fold = folds[l]
 
         # positioning in the cmpsorted dataset
-		gather = cmpsorted_data[:, tracenr:(tracenr+fold)]
-		gather_hdr = cmpsorted_hdr[:, tracenr:(tracenr+fold)]
+        gather = cmpsorted_data[:, tracenr:(tracenr+fold)]
+        gather_hdr = cmpsorted_hdr[:, tracenr:(tracenr+fold)]
 
-		# NMO and stack the selected CMP-gather
-		nmoed = nmo_vxt(gather, gather_hdr, H,  vmodel[:,l], smute)
-		zotrace = stack_cmp(nmoed)
-		zosection[:,l] = zotrace[:,0]
+        # NMO and stack the selected CMP-gather
+        nmoed = nmo_vxt(gather, gather_hdr, H,  vmodel[:,l], smute)
+        zotrace = stack_cmp(nmoed)
+        zosection[:,l] = zotrace[:,0]
 
-		# go to traceposition of next CMP in cmpsorted dataset
-		tracenr = tracenr + fold
+        # go to traceposition of next CMP in cmpsorted dataset
+        tracenr = tracenr + fold
 
         # Update message
-		if printcounter == tenPerc:
-			percStatus += 10
-			print('Finished stacking {} traces out of {}. {}%'.format(l, cmpnr, percStatus))
-			printcounter=0
+        if printcounter == tenPerc:
+            percStatus += 10
+            print('Finished stacking {} traces out of {}. {}%'.format(l, cmpnr, percStatus))
+            printcounter=0
 
-		printcounter+=1
+        printcounter+=1
 
-	print('Done')
+    print('Done')
 
-	return zosection
+    return zosection
 
 
 
@@ -1449,10 +1452,10 @@ def stackplot(gather: np.ndarray, H: dict)->np.ndarray:
 
     fig = plt.figure(figsize=(12,5))
     plt.subplot(131)
-    wiggle2(gather,t=t)
+    wiggle(gather,t=t)
     plt.title("Input gather")
     plt.subplot(132)
-    wiggle2(gather2, t=t)
+    wiggle(gather2, t=t)
     plt.title("Input gather including stacked trace")
     plt.subplot(133)
     plt.plot(stack, t, color='green')
