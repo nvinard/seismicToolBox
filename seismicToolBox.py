@@ -558,7 +558,7 @@ def wiggle(
         t=np.arange(0, ns)
         yl='Sample number'
 
-    dx = x[1]-x[0]
+    dx = abs(x[1]-x[0])
 
     Dmax = np.nanmax(Data)
     maxval = np.abs(Dmax)
@@ -584,7 +584,7 @@ def wiggle(
             ax.fill_betweenx(t, offset, traceplt, where=(traceplt>offset), interpolate='True', linewidth=0, color=color)
             ax.grid(False)
 
-        ax.set_xlim([x[0]-1, x[-1]+1])
+        ax.set_xlim([x[0]-dx, x[-1]+dx])
 
     ax.invert_yaxis()
     ax.set_ylim([np.max(t), np.min(t)])
