@@ -448,7 +448,7 @@ def imageseis(DataO: np.ndarray, x=None, t=None, gain=1, perc=100):
             print('Error: x array not of same length as number of trace samples in data \n Samples in data: {}, sample in input x array: {}'.format(ns, len(t)))
 
     plt.subplots_adjust(left=0.25, bottom=0.3)
-    img = plt.pcolormesh(x, t, Data*gain, vmin=-1*maxval, vmax=maxval, cmap='seismic')
+    img = plt.pcolormesh(x, t, Data*gain, vmin=-1*maxval, vmax=maxval, cmap='seismic', shading='auto')
     cb = plt.colorbar()
     plt.axis('auto')
     plt.xlabel(xLabel)
@@ -793,7 +793,7 @@ def semblanceWiggle(
         S[IndF[IND],vi]=s[IND]
 
     fig, ax = plt.subplots(nrows= 1, figsize=(4,10))
-    ax.pcolormesh(v, t, S)
+    ax.pcolormesh(v, t, S, shading='auto')
     ax.invert_yaxis()
     ax.set_xlabel('Velocity, m/s', fontsize=12)
     ax.set_ylabel('Time, s', fontsize=12)
@@ -2587,3 +2587,51 @@ def inst_agc(trace, time, time_gate = 500e-3 ):
     gained_trace = trace*(np.sqrt(np.mean(np.square(trace)))/amp_inst_values)
 
     return gained_trace
+
+def calculate_rms_1d(vector):
+    """
+    calculate rms for a signal trace
+    used in normalise function.
+    """
+    sqrs = vector**2
+    mean = np.mean(sqrs)
+    return np.sqrt(mean)
+
+def rms_2d(matrix):
+    """
+    calculate rms for a 2D-matrix
+    used in normalise function.
+    """
+    
+    nt, nx = matrix.shape
+    
+    rms_vals= np.zeros(nx)
+
+    for i in range(nx):
+        rms_vals[i] = calculate_rms_1d(matrix[:,i])
+        
+    return rms_vals
+
+def normalise(input_data: np.ndarray)->np.ndarray:
+    """
+    normalised_data = normalise(input_data)
+
+    This function normalises each trace by its RMS. 
+
+    Parameters
+    ----------
+    Input_data: np.ndarray
+
+    Returns
+    -------
+    normalised_data: np.ndarray
+    
+
+    Written to python by Musab Al Hasani, 2021
+
+    """
+    
+    original_amp = input_data
+    norm = (1/rms_2d(original_amp))*original_amp
+        
+    return norm
